@@ -1,0 +1,15 @@
+version: "3"
+services:
+  telegram-system-message-deleter-bot:
+    image: systemnick/telegram-system-message-deleter-bot:latest
+    hostname: telegram-system-message-deleter-bot
+    restart: always
+    container_name: telegram-system-message-deleter-bot
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      - TELEGRAM_TOKEN
+      - ADMIN_GROUP_ID
