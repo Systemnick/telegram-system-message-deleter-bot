@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	tele "gopkg.in/telebot.v3"
+	tele "gopkg.in/telebot.v4"
 )
 
 func main() {
@@ -89,8 +89,13 @@ func main() {
 		sender := msg.Sender
 		chat := getGroupLinkMD(c.Message().Chat)
 
+		log.Printf("Sender: %+v", *sender)
+		log.Printf("UserJoined: %+v", *msg.UserJoined)
+		log.Printf("Chat MD: %s", chat)
+
 		if len(msg.UsersJoined) == 1 && sender.ID == msg.UsersJoined[0].ID {
 			whom := getUserLinkMD(sender)
+			log.Printf("Sender MD: %s", whom)
 			text := fmt.Sprintf("%s joined %s", whom, chat)
 
 			_, err = b.Send(&tele.Chat{ID: adminGroupID}, text, tele.ModeMarkdownV2)
@@ -99,9 +104,11 @@ func main() {
 		}
 
 		who := getUserDescriptionMD(sender)
+		log.Printf("Sender MD: %+v", who)
 		whom := make([]string, 0, len(msg.UsersJoined))
 
 		for _, user := range msg.UsersJoined {
+			log.Printf("UserJoined MD: %s", getUserLinkMD(&user))
 			whom = append(whom, getUserLinkMD(&user))
 		}
 
@@ -129,6 +136,11 @@ func main() {
 		who := getUserDescriptionMD(sender)
 		whom := getUserLinkMD(leftUser)
 		chat := getGroupLinkMD(c.Message().Chat)
+
+		log.Printf("Sender: %+v", *sender)
+		log.Printf("Sender MD: %s", who)
+		log.Printf("UserLeft: %+v", *leftUser)
+		log.Printf("UserLeftMD: %s", whom)
 
 		if sender.ID == leftUser.ID {
 			text := fmt.Sprintf("%s left %s", whom, chat)
@@ -191,7 +203,12 @@ func getUserLinkMD(user *tele.User) string {
 }
 
 func getGroupLinkMD(c *tele.Chat) string {
-	return fmt.Sprintf("[%s](tg://resolve?domain=%s)", escapeSpecialCharactersMD(c.Title), c.Username)
+	text := escapeSpecialCharactersMD(c.Title)
+	if c.Username == "" {
+		return text
+	}
+
+	return fmt.Sprintf("[%s](tg://resolve?domain=%s)", text, c.Username)
 }
 
 func getPinnedMessageLinkMD(m *tele.Message) string {
